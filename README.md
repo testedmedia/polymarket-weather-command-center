@@ -185,6 +185,13 @@ Ground rules baked into the design:
 
 ![Costs panel](docs/costs-panel.jpeg)
 
+## Roadmap
+
+- **Demo mode**: bundled sample payload so `npm run dev` renders a full dashboard with no engine (top priority, see issues)
+- **Engine release**: forecast cron, observation ingest, ensemble ingest, shadow scoring, Supabase schema
+- docker-compose for self-hosters who skip Vercel
+- Kalshi temperature markets alongside Polymarket
+
 ## Running it yourself
 
 This app is the Command Center UI plus a thin read-only proxy. It renders the weather-intel payload produced by the forecast engine (a 15-minute cron that fans out to every source above and assembles per-city intelligence).
@@ -202,7 +209,7 @@ Environment variables:
 | `UPSTREAM_BASE` | Base URL of the engine that serves `/api/brain/trading?type=weather-intel` |
 | `UPSTREAM_SECRET` | Bearer token the proxy sends to the engine (server-side only, never shipped to the browser) |
 
-The full engine (forecast cron, observation ingest, ensemble ingest, shadow scoring, Supabase schema) is being packaged as a follow-up release. The payload schema the UI consumes is fully visible in `app/page.tsx` types.
+The full engine is being packaged as a follow-up release (see Roadmap). The payload schema the UI consumes is fully visible in `app/page.tsx` types.
 
 ## If this saved you time
 
