@@ -1894,8 +1894,110 @@ function formatCountdownCompact(hours: number): string {
 }
 
 // Weather condition phrase → emoji icon for hourly forecast display
-function weatherIcon(condition: string, hourLabel?: string): string {
-  if (!condition) return ''
+const WX_SUN = (
+  <g>
+    <circle cx="8" cy="8" r="3" fill="#fbbf24" />
+    <g stroke="#fbbf24" strokeWidth="1.2" strokeLinecap="round">
+      <line x1="8" y1="1" x2="8" y2="2.8" />
+      <line x1="8" y1="13.2" x2="8" y2="15" />
+      <line x1="1" y1="8" x2="2.8" y2="8" />
+      <line x1="13.2" y1="8" x2="15" y2="8" />
+      <line x1="3.05" y1="3.05" x2="4.3" y2="4.3" />
+      <line x1="11.7" y1="11.7" x2="12.95" y2="12.95" />
+      <line x1="3.05" y1="12.95" x2="4.3" y2="11.7" />
+      <line x1="11.7" y1="4.3" x2="12.95" y2="3.05" />
+    </g>
+  </g>
+)
+const WX_CLOUD = (fill: string, small = false) =>
+  small ? (
+    <path d="M9.2 14.6H4.9a2.4 2.4 0 0 1-.4-4.77 3.1 3.1 0 0 1 5.9-.83 2.35 2.35 0 0 1-1.2 5.6z" fill={fill} />
+  ) : (
+    <path d="M11.4 13H4.4a2.9 2.9 0 0 1-.45-5.77A3.9 3.9 0 0 1 11.5 6.1 3 3 0 0 1 11.4 13z" fill={fill} />
+  )
+const WX_ICONS: Record<string, React.ReactNode> = {
+  CLR: WX_SUN,
+  NT: <path d="M12.6 10.2A5.4 5.4 0 0 1 5.8 3.4 5.4 5.4 0 1 0 12.6 10.2z" fill="#cbd5e1" />,
+  FEW: (
+    <g>
+      {WX_SUN}
+      {WX_CLOUD('#d1d5db', true)}
+    </g>
+  ),
+  SCT: (
+    <g>
+      <g transform="translate(1.5,-1.5)">{WX_SUN}</g>
+      {WX_CLOUD('#d1d5db')}
+    </g>
+  ),
+  BKN: (
+    <g>
+      <g transform="translate(3,-2) scale(0.8)">{WX_SUN}</g>
+      {WX_CLOUD('#9ca3af')}
+    </g>
+  ),
+  OVC: WX_CLOUD('#9ca3af'),
+  FG: (
+    <g stroke="#9ca3af" strokeWidth="1.4" strokeLinecap="round">
+      <line x1="2" y1="5" x2="14" y2="5" />
+      <line x1="3" y1="8" x2="13" y2="8" />
+      <line x1="2" y1="11" x2="14" y2="11" />
+    </g>
+  ),
+  RA: (
+    <g>
+      <g transform="translate(0,-1.5)">{WX_CLOUD('#9ca3af')}</g>
+      <g stroke="#60a5fa" strokeWidth="1.3" strokeLinecap="round">
+        <line x1="5" y1="13" x2="4.4" y2="15" />
+        <line x1="8" y1="13" x2="7.4" y2="15" />
+        <line x1="11" y1="13" x2="10.4" y2="15" />
+      </g>
+    </g>
+  ),
+  SHRA: (
+    <g>
+      <g transform="translate(0,-1.5)">{WX_CLOUD('#d1d5db')}</g>
+      <g stroke="#60a5fa" strokeWidth="1.3" strokeLinecap="round">
+        <line x1="6" y1="13" x2="5.4" y2="15" />
+        <line x1="10" y1="13" x2="9.4" y2="15" />
+      </g>
+    </g>
+  ),
+  SN: (
+    <g>
+      <g transform="translate(0,-1.5)">{WX_CLOUD('#d1d5db')}</g>
+      <g fill="#e5e7eb">
+        <circle cx="5" cy="13.7" r="0.9" />
+        <circle cx="8" cy="14.6" r="0.9" />
+        <circle cx="11" cy="13.7" r="0.9" />
+      </g>
+    </g>
+  ),
+  TS: (
+    <g>
+      <g transform="translate(0,-1.5)">{WX_CLOUD('#6b7280')}</g>
+      <path d="M8.6 10.2 6.4 13.4h1.7l-1 2.6 3.1-3.6H8.5l1.2-2.2z" fill="#facc15" />
+    </g>
+  ),
+  FZ: (
+    <g>
+      <g transform="translate(0,-1.5)">{WX_CLOUD('#d1d5db')}</g>
+      <path d="M8 12.4l1.5 1.9a1.9 1.9 0 1 1-3 0z" fill="#22d3ee" />
+    </g>
+  ),
+  WND: (
+    <g stroke="#94a3b8" strokeWidth="1.4" strokeLinecap="round" fill="none">
+      <path d="M2 6h8a2 2 0 1 0-2-2" />
+      <path d="M2 10h10a2 2 0 1 1-2 2" />
+    </g>
+  ),
+  DEFAULT: <circle cx="8" cy="8" r="2.5" fill="#94a3b8" />,
+}
+// SNOW SHOWER reuses SN; keep key for the classifier below
+WX_ICONS.SHSN = WX_ICONS.SN
+
+function weatherIcon(condition: string, hourLabel?: string): React.ReactNode {
+  if (!condition) return null
   const c = condition.toLowerCase()
   // Determine if it's nighttime from hour label (e.g. "9 PM", "11 PM", "5 AM")
   const isNight = (() => {
@@ -1908,22 +2010,37 @@ function weatherIcon(condition: string, hourLabel?: string): string {
     if (ampm === 'AM' && h === 12) h = 0
     return h >= 19 || h < 6 // 7 PM to 6 AM = night
   })()
-  if (c.includes('thunder')) return 'TS'
-  if (c.includes('freezing rain') || c.includes('sleet') || c.includes('ice')) return 'FZ'
-  if (c.includes('snow shower')) return 'SHSN'
-  if (c.includes('snow') || c.includes('flurr')) return 'SN'
-  if (c.includes('heavy rain') || c.includes('downpour')) return 'RA'
-  if (c.includes('rain') || c.includes('shower')) return 'RA'
-  if (c.includes('drizzle')) return 'SHRA'
-  if (c.includes('fog') || c.includes('mist') || c.includes('haze') || c.includes('hazy')) return 'FG'
-  if (c.includes('overcast') || (c.includes('cloudy') && !c.includes('partly') && !c.includes('mostly clear')))
-    return 'OVC'
-  if (c.includes('mostly cloudy') || c.includes('broken')) return isNight ? 'OVC' : 'BKN'
-  if (c.includes('partly cloudy') || c.includes('partly sunny') || c.includes('scattered')) return isNight ? 'OVC' : 'SCT'
-  if (c.includes('mostly clear') || c.includes('mostly sunny') || c.includes('fair')) return isNight ? 'NT' : 'FEW'
-  if (c.includes('clear') || c.includes('sunny')) return isNight ? 'NT' : 'CLR'
-  if (c.includes('wind')) return 'WND'
-  return '--'
+  const key = (() => {
+    if (c.includes('thunder')) return 'TS'
+    if (c.includes('freezing rain') || c.includes('sleet') || c.includes('ice')) return 'FZ'
+    if (c.includes('snow shower')) return 'SHSN'
+    if (c.includes('snow') || c.includes('flurr')) return 'SN'
+    if (c.includes('heavy rain') || c.includes('downpour')) return 'RA'
+    if (c.includes('rain') || c.includes('shower')) return 'RA'
+    if (c.includes('drizzle')) return 'SHRA'
+    if (c.includes('fog') || c.includes('mist') || c.includes('haze') || c.includes('hazy')) return 'FG'
+    if (c.includes('overcast') || (c.includes('cloudy') && !c.includes('partly') && !c.includes('mostly clear')))
+      return 'OVC'
+    if (c.includes('mostly cloudy') || c.includes('broken')) return isNight ? 'OVC' : 'BKN'
+    if (c.includes('partly cloudy') || c.includes('partly sunny') || c.includes('scattered'))
+      return isNight ? 'OVC' : 'SCT'
+    if (c.includes('mostly clear') || c.includes('mostly sunny') || c.includes('fair')) return isNight ? 'NT' : 'FEW'
+    if (c.includes('clear') || c.includes('sunny')) return isNight ? 'NT' : 'CLR'
+    if (c.includes('wind')) return 'WND'
+    return 'DEFAULT'
+  })()
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      width="1em"
+      height="1em"
+      className="inline-block align-[-0.15em]"
+      aria-label={condition}
+      role="img"
+    >
+      {WX_ICONS[key]}
+    </svg>
+  )
 }
 
 function degreesToCompass(deg: number | null): string {
