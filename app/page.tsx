@@ -207,7 +207,7 @@ interface WUCityIntel {
   recommendationReason: string
   signalConfidence: 'HIGH' | 'MEDIUM' | 'LOW'
   obsTimeline?: { hour: number; minute: number; temp: number; label: string }[]
-  metarTimeline?: { hour: number; minute: number; temp: number; label: string; timestamp?: number }[]
+  metarTimeline?: { hour: number; minute: number; temp: number; label: string; timestamp?: number; wx?: string }[]
   metarHigh?: number | null
   metarCurrent?: number | null
   metarLastObsTime?: string | null
@@ -1996,6 +1996,32 @@ const WX_ICONS: Record<string, React.ReactNode> = {
 // SNOW SHOWER reuses SN; keep key for the classifier below
 WX_ICONS.SHSN = WX_ICONS.SN
 
+// METAR wx/cover code (wxString or dominant cloud cover) → sky icon, night-aware
+function metarWxIcon(wx: string, hour: number): React.ReactNode {
+  const w = wx.toUpperCase()
+  const isNight = hour >= 19 || hour < 6
+  const key = (() => {
+    if (w.includes('TS')) return 'TS'
+    if (w.includes('FZ') || w.includes('PL') || w.includes('GR') || w.includes('GS')) return 'FZ'
+    if (w.includes('SN') || w.includes('SG')) return 'SN'
+    if (w.includes('DZ')) return 'SHRA'
+    if (w.includes('RA') || w.includes('SH') || w.includes('UP')) return 'RA'
+    if (w.includes('FG') || w.includes('BR') || w.includes('HZ') || w.includes('FU') || w.includes('DU')) return 'FG'
+    if (w.includes('OVC')) return 'OVC'
+    if (w.includes('BKN')) return isNight ? 'OVC' : 'BKN'
+    if (w.includes('SCT')) return isNight ? 'OVC' : 'SCT'
+    if (w.includes('FEW')) return isNight ? 'NT' : 'FEW'
+    if (w.includes('CLR') || w.includes('SKC') || w.includes('CAVOK') || w.includes('NCD') || w.includes('NSC'))
+      return isNight ? 'NT' : 'CLR'
+    return 'DEFAULT'
+  })()
+  return (
+    <svg viewBox="0 0 16 16" width="1em" height="1em" className="inline-block" aria-label={wx} role="img">
+      {WX_ICONS[key]}
+    </svg>
+  )
+}
+
 const wxMini = (children: React.ReactNode, label: string) => (
   <svg viewBox="0 0 16 16" width="1em" height="1em" className="inline-block align-[-0.15em] mr-0.5" aria-label={label} role="img">
     {children}
@@ -2518,7 +2544,7 @@ function MetarCountdown({
   metarNextExpectedTimestamp: apiNextExpected,
 }: {
   metarLastObsTime: string | null | undefined
-  metarTimeline?: { hour: number; minute: number; temp: number; label: string; timestamp?: number }[]
+  metarTimeline?: { hour: number; minute: number; temp: number; label: string; timestamp?: number; wx?: string }[]
   timezone: string
   isUS: boolean
   cityName?: string
@@ -7016,6 +7042,11 @@ export default function TradingPage() {
                                                           m.toLowerCase().charAt(0),
                                                         ) || `${obs.hour}:${String(obs.minute).padStart(2, '0')}`}
                                                       </span>
+                                                      {obs.wx && (
+                                                        <span className="text-sm leading-none" title={obs.wx}>
+                                                          {metarWxIcon(obs.wx, obs.hour)}
+                                                        </span>
+                                                      )}
                                                       <span
                                                         className={`text-sm font-mono font-bold ${c.metarHigh !== null && obs.temp === c.metarHigh ? 'text-emerald-400' : 'text-white'}`}
                                                       >
