@@ -8,10 +8,6 @@
 
 Multi-model forecasts, live ASOS/METAR station observations, per-bucket probabilities and edge vs market price across 41 cities. Every win-rate claim in this README recomputes from the raw backtest data shipped in this repo.
 
-![Command Center access](docs/login.jpeg)
-
-![Live demo: expanding a city card](docs/demo.gif)
-
 ![Dashboard](docs/dashboard.jpeg)
 
 ![ASOS and METAR charted live against the market buckets](docs/city-chart.jpeg)
@@ -213,6 +209,12 @@ The full engine (forecast cron, observation ingest, ensemble ingest, shadow scor
 If the backtest data or the source saved you research hours, a star helps other traders find it.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=testedmedia/polymarket-weather-command-center&type=Date)](https://star-history.com/#testedmedia/polymarket-weather-command-center&Date)
+
+## Access
+
+The hosted instance is gated behind an access key.
+
+![Command Center access](docs/login.jpeg)
 
 ## Disclaimer
 
