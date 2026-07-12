@@ -1996,6 +1996,15 @@ const WX_ICONS: Record<string, React.ReactNode> = {
 // SNOW SHOWER reuses SN; keep key for the classifier below
 WX_ICONS.SHSN = WX_ICONS.SN
 
+const wxMini = (children: React.ReactNode, label: string) => (
+  <svg viewBox="0 0 16 16" width="1em" height="1em" className="inline-block align-[-0.15em] mr-0.5" aria-label={label} role="img">
+    {children}
+  </svg>
+)
+const WX_MINI_WIND = wxMini(WX_ICONS.WND, 'wind')
+const WX_MINI_DROP = wxMini(<path d="M8 1.8l3 4.2a3.7 3.7 0 1 1-6 0z" fill="#60a5fa" />, 'humidity')
+const WX_MINI_CLOUD = wxMini(WX_CLOUD('#9ca3af'), 'cloud cover')
+
 function weatherIcon(condition: string, hourLabel?: string): React.ReactNode {
   if (!condition) return null
   const c = condition.toLowerCase()
@@ -6720,16 +6729,23 @@ export default function TradingPage() {
                                             )}
                                             {c.windSpeed !== null && c.windSpeed !== undefined && (
                                               <span className="text-gray-400">
+                                                {WX_MINI_WIND}
                                                 {c.windSpeed}
                                                 mph {c.windDirection || ''}
                                               </span>
                                             )}
                                             {c.humidity !== null && c.humidity !== undefined && (
-                                              <span className="text-gray-400">{c.humidity}%</span>
+                                              <span className="text-gray-400">
+                                                {WX_MINI_DROP}
+                                                {c.humidity}%
+                                              </span>
                                             )}
                                             {c.openMeteoObs?.cloudCover !== null &&
                                               c.openMeteoObs?.cloudCover !== undefined && (
-                                                <span className="text-gray-400">{c.openMeteoObs.cloudCover}%</span>
+                                                <span className="text-gray-400">
+                                                  {WX_MINI_CLOUD}
+                                                  {c.openMeteoObs.cloudCover}%
+                                                </span>
                                               )}
                                             {c.pressureTrend && (
                                               <span className="text-gray-400">
@@ -6742,7 +6758,7 @@ export default function TradingPage() {
                                               </span>
                                             )}
                                           </div>
-                                          {c.wuHourlyForecast && c.wuHourlyForecast.length > 0 && (
+                                          {c.wuHourlyForecast && c.wuHourlyForecast.filter((h) => h.hour !== '12 AM').length > 0 && (
                                             <div className="pt-1.5 border-t border-white/5">
                                               <div className="text-[9px] text-gray-500 mb-1">Hourly Forecast:</div>
                                               <div className="flex gap-2 overflow-x-auto pb-1">
