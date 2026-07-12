@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // requires a valid, unexpired cookie.
 const COOKIE = 'pwcc-auth'
 
-const PUBLIC_PATHS = ['/login', '/api/auth', '/icon.svg', '/testedmedia.svg', '/favicon.ico']
+const PUBLIC_PATHS = ['/login', '/api/auth', '/api/demo-status', '/icon.svg', '/testedmedia.svg', '/favicon.ico']
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(

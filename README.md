@@ -191,16 +191,29 @@ This app is the Command Center UI plus a thin read-only proxy. It renders the we
 
 ```bash
 npm install
+npm run dev                  # http://localhost:3210 — DEMO MODE, no env vars needed
+```
+
+### Demo mode
+
+With no `.env.local` at all, `npm run dev` runs in **demo mode**: the proxy route (`app/api/brain/trading/[[...path]]/route.ts`) serves a bundled synthetic sample payload from `lib/demo-data.ts` instead of proxying to a real engine, so every panel — all 41 cities, buckets, model intelligence, positions, scorecards, the sniper bot panel — renders populated on first run. A yellow banner marks it clearly as sample data; nothing in demo mode is a real trade or a real balance. The 4 verified win rates it shows for the scorecard are the same real, published numbers from the "Headline verified numbers" table above — everything else (positions, trades, PnL, bot status) is fabricated to exercise the UI, not a claim about real performance.
+
+This unblocks evaluating the whole dashboard without the forecast engine, which isn't open-sourced yet.
+
+To connect a real engine instead:
+
+```bash
 cp .env.example .env.local   # point UPSTREAM_BASE at your engine, set UPSTREAM_SECRET
-npm run dev                  # http://localhost:3210
+npm run dev
 ```
 
 Environment variables:
 
 | Var | Purpose |
 | --- | --- |
-| `UPSTREAM_BASE` | Base URL of the engine that serves `/api/brain/trading?type=weather-intel` |
+| `UPSTREAM_BASE` | Base URL of the engine that serves `/api/brain/trading?type=weather-intel`. Unset = demo mode. |
 | `UPSTREAM_SECRET` | Bearer token the proxy sends to the engine (server-side only, never shipped to the browser) |
+| `DEMO` | Optional override. `DEMO=1` forces demo mode on even with `UPSTREAM_BASE` set; `DEMO=0` forces it off (upstream failures surface as real 502s instead of falling back to sample data) |
 
 The full engine (forecast cron, observation ingest, ensemble ingest, shadow scoring, Supabase schema) is being packaged as a follow-up release. The payload schema the UI consumes is fully visible in `app/page.tsx` types.
 
