@@ -228,7 +228,7 @@ The full engine is being packaged as a follow-up release (see Roadmap). The payl
 
 If the backtest data or the source saved you research hours, a star helps other traders find it.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=testedmedia/polymarket-weather-command-center&type=Date)](https://star-history.com/#testedmedia/polymarket-weather-command-center&Date)
+[![GitHub stars](https://img.shields.io/github/stars/testedmedia/polymarket-weather-command-center?style=for-the-badge&logo=github)](https://github.com/testedmedia/polymarket-weather-command-center/stargazers)
 
 ## Access
 
